@@ -12,13 +12,35 @@ void Main()
 	// 自機（初期位置）.
 	Vec2 playerPos{ 400, 500 };
 
+	// 自機弾（位置）.
+	Array<Vec2> playerBullets;
+
+	// 自機のスピード.
+	constexpr double PlayerSpeed = 550.0;
+
+	// 自機ショットのスピード
+	constexpr double PlayerBulletSpeed = 500.0;
+
+	// 自機ショットのクールタイム（秒）
+	constexpr double PlayerShotCoolTime = 0.1;
+	// 自機ショットのクールタイムタイマー（秒）
+	double playerShotTimer = 0.0;
+
 	while (System::Update())
 	{
-		// 自機のスピード.
-		constexpr double PlayerSpeed = 550.0;
-
 		// 1フレームの経過時間.
 		const double deltaTime = Scene::DeltaTime();
+
+		////////////////////////
+		// 毎フレームの処理.
+		////////////////////////
+		
+		// 自機弾のタイマー処理.
+		playerShotTimer = Min((playerShotTimer + deltaTime), PlayerShotCoolTime);
+		// playerShotTimer += deltaTime;
+		// if( playerShotTimer > PlayerShotCoolTime ){
+		//   playerShotTimer = PlayerShotCoolTime;
+		// }
 
 		// 自機の移動ベクトル.
 		// 入力方向→正規化→スピード係数をかけて調整→シフト入力で減速する仕組み.
@@ -30,9 +52,41 @@ void Main()
 		// 自機の移動.
 		playerPos.moveBy(move).clamp(Scene::Rect());
 
+		// 自機弾の発射
+		if (PlayerShotCoolTime <= playerShotTimer)
+		{
+			playerShotTimer -= PlayerShotCoolTime;
+			playerBullets << playerPos.movedBy(0, -50);
+		}
+
+		// 自機弾の発射.
+		if (PlayerShotCoolTime <= playerShotTimer)
+		{	// 発射タイミング
+			playerShotTimer -= PlayerShotCoolTime;		// 次回発射までの時間計算.
+			playerBullets << playerPos.movedBy(0, -50);	// 配列に追加.
+		}
+		// 自機弾を移動.
+		for (auto& playerBullet : playerBullets)
+		{
+			playerBullet.y += (deltaTime * -PlayerBulletSpeed);
+		}
+		// 画面外に出た自機弾を削除.
+		playerBullets.remove_if([](const Vec2& b) { return (b.y < -40); });
+
+		////////////////////////
+		// 描画.
+		////////////////////////
+
 		// 自機を描画.
 		//playerTexture.resized(80).flipped().drawAt(playerPos);
 		playerTexture.resized(80).drawAt(playerPos);
+
+		// 自機弾を描画.
+		for (const auto& playerBullet : playerBullets)
+		{
+			Circle{ playerBullet, 8 }.draw(Palette::Orange);
+		}
+
 	}
 }
 
