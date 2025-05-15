@@ -1,5 +1,13 @@
 ﻿# include <Siv3D.hpp> // Siv3D v0.6.15
 
+
+// 敵の位置をランダムに作成する関数
+Vec2 GenerateEnemy()
+{
+	// x: 50～750, y: -20 の2次元座標.
+	return RandomVec2({ 50, 750 }, -20);
+}
+
 void Main()
 {
 	Scene::SetBackground(ColorF{ 0.1, 0.2, 0.7 });
@@ -9,11 +17,17 @@ void Main()
 	// 自機テクスチャ // 🧘🤖⚜
 	const Texture playerTexture{ U"🧘"_emoji };
 
+	// 敵テクスチャ
+	const Texture enemyTexture{ U"👾"_emoji };
+
 	// 自機（初期位置）.
 	Vec2 playerPos{ 400, 500 };
 
 	// 自機弾（位置）.
 	Array<Vec2> playerBullets;
+
+	// 敵（位置）.
+	Array<Vec2> enemies = { GenerateEnemy() };
 
 	// 自機のスピード.
 	constexpr double PlayerSpeed = 550.0;
